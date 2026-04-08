@@ -145,7 +145,7 @@ if [[ "$KSU_BRANCH" == "y" || "$KSU_BRANCH" == "Y" ]]; then
   echo "当前提交哈希: $GIT_COMMIT_HASH"
   echo ">>> 正在获取上游 API 版本信息..."
   for i in {1..3}; do
-      KSU_API_VERSION=$(curl -s "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/builtin/kernel/Kbuild" | \
+      KSU_API_VERSION=$(curl -s "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/builtin/kernel/Makefile" | \
           grep -m1 "KSU_VERSION_API :=" | \
           awk -F'= ' '{print $2}' | \
           tr -d '[:space:]')
@@ -165,22 +165,22 @@ if [[ "$KSU_BRANCH" == "y" || "$KSU_BRANCH" == "Y" ]]; then
 
   VERSION_DEFINITIONS=$'define get_ksu_version_full\nv\\$1-'"$GIT_COMMIT_HASH"$'@cctv18\nendef\n\nKSU_VERSION_API := '"$KSU_API_VERSION"$'\nKSU_VERSION_FULL := v'"$KSU_API_VERSION"$'-'"$GIT_COMMIT_HASH"$'@cctv18'
 
-  echo ">>> 正在修改 kernel/Kbuild 文件..."
-  sed -i '/define get_ksu_version_full/,/endef/d' kernel/Kbuild
-  sed -i '/KSU_VERSION_API :=/d' kernel/Kbuild
-  sed -i '/KSU_VERSION_FULL :=/d' kernel/Kbuild
+  echo ">>> 正在修改 kernel/Makefile 文件..."
+  sed -i '/define get_ksu_version_full/,/endef/d' kernel/Makefile
+  sed -i '/KSU_VERSION_API :=/d' kernel/Makefile
+  sed -i '/KSU_VERSION_FULL :=/d' kernel/Makefile
   awk -v def="$VERSION_DEFINITIONS" '
       /REPO_OWNER :=/ {print; print def; inserted=1; next}
       1
       END {if (!inserted) print def}
-  ' kernel/Kbuild > kernel/Kbuild.tmp && mv kernel/Kbuild.tmp kernel/Kbuild
+  ' kernel/Makefile > kernel/Makefile.tmp && mv kernel/Makefile.tmp kernel/Makefile
 
   KSU_VERSION_CODE=$(expr $(git rev-list --count main 2>/dev/null) + 37185 2>/dev/null || echo 114514)
   echo ">>> 修改完成！验证结果："
   echo "------------------------------------------------"
-  grep -A10 "REPO_OWNER" kernel/Kbuild | head -n 10
+  grep -A10 "REPO_OWNER" kernel/Makefile | head -n 10
   echo "------------------------------------------------"
-  grep "KSU_VERSION_FULL" kernel/Kbuild
+  grep "KSU_VERSION_FULL" kernel/Makefile
   echo ">>> 最终版本字符串: v${KSU_API_VERSION}-${GIT_COMMIT_HASH}@cctv18"
   echo ">>> Version Code: ${KSU_VERSION_CODE}"
 elif [[ "$KSU_BRANCH" == "r" || "$KSU_BRANCH" == "R" ]]; then
